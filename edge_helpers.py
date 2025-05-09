@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.signal import convolve2d
+
 def get_sobel_kernels():
     """Return the Sobel kernels for horizontal and vertical edge detection"""
     # Sobel kernels
@@ -17,24 +19,9 @@ def get_sobel_kernels():
     return sobel_x, sobel_y
 
 def apply_convolution(image, kernel):
-    """Original slow implementation of convolution"""
-    # Get image dimensions
-    height, width = image.shape[:2]
-    kernel_size = kernel.shape[0]
-    pad_size = kernel_size // 2
-    # Pad the image
-    padded = np.pad(image, pad_size, mode='symmetric')
-    # Initialize output
-    output = np.zeros_like(image, dtype=np.float32)
-    # Apply convolution
-    for i in range(height):
-        for j in range(width):
-            # Extract the region of interest
-            region = padded[i:i+kernel_size, j:j+kernel_size]
-            # Apply the kernel
-            output[i, j] = np.sum(region * kernel)
-    
-    return output
+    """Apply 2D convolution to the image using the given kernel"""
+    # Use scipy's optimized convolution
+    return convolve2d(image, kernel, mode='same', boundary='symm')
 
 def normalize_edges(edges, sensitivity=1.0):
     """Normalize edge values to 0-255 range and apply sensitivity adjustment"""
