@@ -23,7 +23,8 @@ def old_convolution(image, kernel):
             # Extract the region of interest
             region = padded[i:i+kernel_size, j:j+kernel_size]
             # Apply the kernel
-            output[i, j] = np.sum(region * kernel)
+            flipped_kernel = np.flipud(np.fliplr(kernel)) # the reason for the values mirroring is to match the mathematical definition of convolution
+            output[i, j] = np.sum(region * flipped_kernel)
     
     return output
 
@@ -81,29 +82,50 @@ def run_benchmark(image_path, num_runs=3):
     print(f"Average time (new): {avg_new:.3f} seconds")
     print(f"Average speedup: {avg_old/avg_new:.1f}x")
     
+    # Diagnostic information
+    print("\nDiagnostic Information:")
+    print(f"Old result range: [{old_result.min():.2f}, {old_result.max():.2f}]")
+    print(f"New result range: [{new_result.min():.2f}, {new_result.max():.2f}]")
+    print(f"Old result mean: {old_result.mean():.2f}")
+    print(f"New result mean: {new_result.mean():.2f}")
+    
+    # Find locations of maximum difference
+    diff = np.abs(old_result - new_result)
+    max_diff_loc = np.unravel_index(diff.argmax(), diff.shape)
+    print(f"\nMaximum difference location: {max_diff_loc}")
+    print(f"Old value at max diff: {old_result[max_diff_loc]:.2f}")
+    print(f"New value at max diff: {new_result[max_diff_loc]:.2f}")
+    
     # Verify results are similar
     mse = np.mean((old_result - new_result) ** 2)
     print(f"\nMean Squared Error between implementations: {mse:.6f}")
     
     # Plot results
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(15, 5))
     
     # Plot original image
-    plt.subplot(131)
+    plt.subplot(141)
     plt.imshow(image, cmap='gray')
     plt.title('Original Image')
     plt.axis('off')
     
     # Plot old result
-    plt.subplot(132)
+    plt.subplot(142)
     plt.imshow(old_result, cmap='gray')
     plt.title('Old Implementation')
     plt.axis('off')
     
     # Plot new result
-    plt.subplot(133)
+    plt.subplot(143)
     plt.imshow(new_result, cmap='gray')
     plt.title('New Implementation')
+    plt.axis('off')
+    
+    # Plot difference
+    plt.subplot(144)
+    plt.imshow(diff, cmap='hot')
+    plt.title('Absolute Difference')
+    plt.colorbar()
     plt.axis('off')
     
     plt.tight_layout()
@@ -111,5 +133,5 @@ def run_benchmark(image_path, num_runs=3):
 
 if __name__ == "__main__":
     # Test with one of our sample images
-    image_path = "images/delft.jpg"
+    image_path = "images/ozzy.jpg"
     run_benchmark(image_path) 
