@@ -2,6 +2,7 @@ import os
 import time
 from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise
 from brightness_helpers import get_brightness_description
+from noiseRemovalFilter import remove_noise
 import utils
 from noise_filter_helper import smooth_image_with_gaussian_blur, smooth_image_with_gaussian_blur, \
     remove_noise_with_median_filter
@@ -167,6 +168,36 @@ def denoise_median_filter(current_image, output_dir):
         print("Please enter a valid odd number for kernel size.")
 
 
+def apply_noise_removal_filter(current_image, output_dir):
+    """Apply noise removal filter with user-selected method"""
+    print("\nChoose noise removal method:")
+    print("1. Median Blur (good for salt-and-pepper noise)")
+    print("2. Gaussian Blur (for smooth denoising)")
+    print("3. Bilateral Filter (preserves edges best)")
+    
+    choice = input("Select method (1/2/3): ").strip()
+    
+    if choice == "1":
+        result = remove_noise(current_image, method="median", ksize=5)
+        method_name = "median"
+    elif choice == "2":
+        result = remove_noise(current_image, method="gaussian", ksize=(5, 5), sigma=0)
+        method_name = "gaussian"
+    elif choice == "3":
+        result = remove_noise(current_image, method="bilateral", d=9, sigma_color=75, sigma_space=75)
+        method_name = "bilateral"
+    else:
+        print("Invalid option.")
+        return
+
+    # Save and display
+    filename = f"denoised_{method_name}.jpg"
+    output_path = os.path.join(output_dir, filename)
+    utils.save_image(result, output_path)
+    print(f"Saved to {output_path}")
+    utils.display_comparison(current_image, result, f"Denoised with {method_name.title()} Filter")
+
+
 def show_main_menu():
     """Display the main menu"""
     print("\n===== Image Enhancer =====")
@@ -178,7 +209,8 @@ def show_main_menu():
     print("6. Add Salt and Pepper noise")
     print("7. Denoise with Gaussian filter")
     print("8. Denoise with Median filter")
-    print("9. Exit")
+    print("9. Noise Removal Tool")
+    print("0. Exit")
     return input("Choose an option: ").strip()
 
 
@@ -214,6 +246,8 @@ def main():
         elif choice == "8":
             denoise_median_filter(current_image, output_dir)
         elif choice == "9":
+            apply_noise_removal_filter(current_image, output_dir)
+        elif choice == "0":
             print("Exiting...")
             time.sleep(1)
             break
