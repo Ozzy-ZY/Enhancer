@@ -3,6 +3,7 @@ import time
 from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
+from InvertColorFilter import apply_invert
 import utils
 from noise_filter_helper import smooth_image_with_gaussian_blur, smooth_image_with_gaussian_blur, \
     remove_noise_with_median_filter
@@ -198,6 +199,21 @@ def apply_noise_removal_filter(current_image, output_dir):
     utils.display_comparison(current_image, result, f"Denoised with {method_name.title()} Filter")
 
 
+
+def apply_invert_filter(current_image, output_dir):
+    """Apply invert color filter"""
+    result = apply_invert(current_image)
+
+    # Save the result
+    output_path = os.path.join(output_dir, "inverted.jpg")
+    utils.save_image(result, output_path)
+    print(f"Saved to {output_path}")
+
+    # Display comparison
+    utils.display_comparison(current_image, result, "Inverted Colors")
+
+
+
 def show_main_menu():
     """Display the main menu"""
     print("\n===== Image Enhancer =====")
@@ -210,6 +226,7 @@ def show_main_menu():
     print("7. Denoise with Gaussian filter")
     print("8. Denoise with Median filter")
     print("9. Noise Removal Tool")
+    print("10. Apply invert color filter")
     print("0. Exit")
     return input("Choose an option: ").strip()
 
@@ -247,6 +264,8 @@ def main():
             denoise_median_filter(current_image, output_dir)
         elif choice == "9":
             apply_noise_removal_filter(current_image, output_dir)
+        elif choice == "10":
+            apply_invert_filter(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
