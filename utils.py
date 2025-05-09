@@ -3,6 +3,7 @@
 import os
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def load_image(path):
@@ -52,3 +53,20 @@ def ensure_dir_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory, exist_ok=True)
     return directory
+
+
+def ensure_image_format(image):
+    """Ensure image is in the correct format (numpy array with uint8 dtype)"""
+    if not isinstance(image, np.ndarray):
+        raise TypeError("Image must be a numpy array")
+    if image.dtype != np.uint8:
+        image = np.clip(image, 0, 255).astype(np.uint8)
+    return image
+
+
+def validate_image_dimensions(image):
+    """Validate that image has the correct dimensions (height, width, channels)"""
+    if len(image.shape) != 3:
+        raise ValueError("Image must be 3-dimensional (height, width, channels)")
+    if image.shape[2] != 3:
+        raise ValueError("Image must have 3 color channels")
