@@ -1,5 +1,6 @@
 import numpy as np
 from brightness_helpers import get_brightness_factor, get_brightness_description
+from edge_helpers import get_sobel_kernels, apply_convolution, normalize_edges
 
 def apply_brightness(image, level=0):
     """Apply brightness adjustment with specified level"""
@@ -59,3 +60,39 @@ def add_salt_pepper_noise(image, intensity=0.1):
         noisy_image[pepper_mask] = 0
 
     return noisy_image
+
+def apply_edge_detection(image, sensitivity=1.0, direction='both'):
+    """
+    Apply Sobel edge detection to the image
+    
+    Args:
+        image: Input image (will be converted to grayscale if color)
+        sensitivity: Edge detection sensitivity (default: 1.0)
+        direction: Edge detection direction ('horizontal', 'vertical', or 'both')
+    
+    Returns:
+        Edge detected image
+    """
+    # Convert to grayscale if color image
+    if len(image.shape) == 3:
+        image = apply_grayscale(image)[..., 0]  # Take one channel since it's grayscale
+    
+    # Get Sobel kernels
+    sobel_x, sobel_y = get_sobel_kernels()
+    
+    # Apply edge detection based on direction
+    if direction == 'horizontal':
+        edges = apply_convolution(image, sobel_x)
+    elif direction == 'vertical':
+        edges = apply_convolution(image, sobel_y)
+    else:  # both
+        edges_x = apply_convolution(image, sobel_x)
+        edges_y = apply_convolution(image, sobel_y)
+        # Calculate magnitude of gradient
+        edges = np.sqrt(edges_x**2 + edges_y**2)
+    
+    # Normalize and apply sensitivity
+    edges = normalize_edges(edges, sensitivity)
+    
+    # Convert back to 3-channel image
+    return np.stack([edges, edges, edges], axis=-1)

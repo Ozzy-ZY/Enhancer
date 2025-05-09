@@ -1,6 +1,6 @@
 import os
 import time
-from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise
+from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
@@ -212,6 +212,50 @@ def apply_invert_filter(current_image, output_dir):
     # Display comparison
     utils.display_comparison(current_image, result, "Inverted Colors")
 
+def apply_edge_detection_filter(current_image, output_dir):
+    """Apply edge detection filter"""
+    try:
+        # Get edge detection direction
+        print("\nEdge Detection Direction:")
+        print("1. Horizontal")
+        print("2. Vertical")
+        print("3. Both (Combined)")
+        direction_choice = input("Choose direction (1-3): ").strip()
+        
+        direction_map = {
+            "1": "horizontal",
+            "2": "vertical",
+            "3": "both"
+        }
+        
+        if direction_choice not in direction_map:
+            print("Invalid direction choice.")
+            return
+            
+        direction = direction_map[direction_choice]
+        
+        # Get sensitivity
+        sensitivity = float(input("Enter sensitivity (0.1 to 2.0, default 1.0): ") or "1.0")
+        if sensitivity < 0.1 or sensitivity > 2.0:
+            print("Invalid sensitivity. Using default value of 1.0")
+            sensitivity = 1.0
+
+        # Apply edge detection
+        result = apply_edge_detection(current_image, sensitivity, direction)
+
+        # Save the result
+        filename = f"edges_{direction}_{sensitivity:.1f}.jpg"
+        output_path = os.path.join(output_dir, filename)
+        utils.save_image(result, output_path)
+        print(f"Saved to {output_path}")
+
+        # Display comparison
+        title = f"Edge Detection ({direction}, sensitivity: {sensitivity:.1f})"
+        utils.display_comparison(current_image, result, title)
+
+    except ValueError:
+        print("Please enter valid numbers for sensitivity.")
+
 
 
 def show_main_menu():
@@ -227,6 +271,7 @@ def show_main_menu():
     print("8. Denoise with Median filter")
     print("9. Noise Removal Tool")
     print("10. Apply invert color filter")
+    print("11. Apply edge detection filter")
     print("0. Exit")
     return input("Choose an option: ").strip()
 
@@ -266,6 +311,8 @@ def main():
             apply_noise_removal_filter(current_image, output_dir)
         elif choice == "10":
             apply_invert_filter(current_image, output_dir)
+        elif choice == "11":
+            apply_edge_detection_filter(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
