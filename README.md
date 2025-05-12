@@ -15,7 +15,8 @@ A powerful image processing application that provides various image enhancement 
 
 - **Edge Detection**
   - Horizontal, vertical, or both directions
-  - Adjustable sensitivity
+  - Adjustable sensitivity (0.1 to 2.0)
+  - Integrated into the Streamlit app
   - Focus metrics (Variance of Laplacian, Sobel Energy)
 
 - **Noise Management**
@@ -86,16 +87,36 @@ The CLI will guide you through:
 
 ```
 Enhancer/
-├── streamlit_app.py      # Web interface implementation
-├── main.py               # CLI implementation
-├── filters.py            # Core image processing functions
-├── utils.py              # Utility functions
-├── noise_filter_helper.py
-├── noiseRemovalFilter.py
-├── InvertColorFilter.py
-├── edge_helpers.py
-├── brightness_helpers.py
-└── images/               # Sample images and documentation
+├── streamlit_app.py           # Web interface implementation
+├── main.py                    # CLI implementation
+├── filters.py                 # Core image processing functions
+├── utils.py                   # Utility functions
+├── noise_filter_helper.py     # Noise filter helpers
+├── noiseRemovalFilter.py      # Noise removal filter
+├── InvertColorFilter.py       # Color inversion filter
+├── Quantitative_Proof.py      # Quantitative proof script
+├── benchmark_edge.py          # Edge detection benchmarking
+├── requirments.txt            # Project dependencies
+├── helpers/
+│   ├── brightness_helpers.py
+│   ├── channel_swap_helpers.py
+│   ├── edge_helpers.py
+│   ├── gaussian_noise_helpers.py
+│   ├── noise_filter_helper.py
+│   ├── salt_pepper_noise_helpers.py
+│   └── unsharp_mask_helpers.py
+├── images/
+│   ├── The_Mill.jpg
+│   ├── brightness_example.png
+│   ├── delft.jpg
+│   ├── edge_detection.png
+│   ├── edges_both_2.0.jpg
+│   ├── inverted.jpg
+│   ├── noise_examples.png
+│   ├── ozzy.jpg
+│   ├── streamlit.png
+│   └── sudi.jpg
+└── README.md 
 ```
 
 ## Sample Results
