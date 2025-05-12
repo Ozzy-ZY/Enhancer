@@ -329,7 +329,6 @@ def show_main_menu():
     print("10. Apply invert color filter")
     print("11. Apply edge detection filter")
     print("12. Add noise then sharpen")
-    print("12. Add noise then sharpen")
     print("13. Channel Manipulation & Swapping")
     print("0. Exit")
     return input("Choose an option: ").strip()
