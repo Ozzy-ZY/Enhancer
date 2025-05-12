@@ -159,6 +159,22 @@ def denoise_gaussian_filter(current_image, output_dir):
     except ValueError:
         print("Please enter a valid number for sigma.")
 
+def apply_noise_then_sharpen(current_image, output_dir):
+    sharpened = unsharp_mask(
+        current_image,
+        ksize=(5, 5),
+        sigma=1.0,
+        amount=1.5,
+        threshold=10
+    )
+    sharp_filename = f"noise_sharpen.jpg"
+    sharp_path = os.path.join(output_dir, sharp_filename)
+    utils.save_image(sharpened, sharp_path)
+    print(f"✨ Sharpened image saved to {sharp_path}")
+
+    # 3) Display comparison
+    utils.display_comparison(current_image, sharpened,
+                             title=f"Noise  → Sharpen ")
 
 def denoise_median_filter(current_image, output_dir):
     """Apply Median filter for denoising"""
