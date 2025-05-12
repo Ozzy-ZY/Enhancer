@@ -1,6 +1,6 @@
 import os
 import time
-from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,unsharp_mask
+from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,unsharp_mask,apply_channel_swap
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
@@ -271,6 +271,38 @@ def apply_edge_detection_filter(current_image, output_dir):
     except ValueError:
         print("Please enter valid numbers for sensitivity.")
 
+def apply_channel_swap_filter(current_image, output_dir):
+    """Apply channel swap/manipulation filter"""
+    print("\nAvailable channel modes:")
+    print("1. RGB (original)")
+    print("2. RBG (swap blue/green)")
+    print("3. GRB (swap green/red)")
+    print("4. GBR (green→blue, blue→red, red→green)")
+    print("5. BRG (blue→red, red→green, green→blue)")
+    print("6. BGR (reverse order)")
+    print("7. Red channel only")
+    print("8. Green channel only")
+    print("9. Blue channel only")
+    
+    choice = input("Select mode (1-9): ").strip()
+    
+    mode_map = {
+        '1': 'rgb', '2': 'rbg', '3': 'grb',
+        '4': 'gbr', '5': 'brg', '6': 'bgr',
+        '7': 'r', '8': 'g', '9': 'b'
+    }
+    
+    if choice not in mode_map:
+        print("Invalid option.")
+        return
+        
+    result = apply_channel_swap(current_image, mode_map[choice])
+    
+    # Save and display
+    output_path = os.path.join(output_dir, f"channel_{mode_map[choice]}.jpg")
+    utils.save_image(result, output_path)
+    utils.display_comparison(current_image, result, 
+                           f"Channel {mode_map[choice].upper()}")
 
 
 def show_main_menu():
@@ -288,6 +320,7 @@ def show_main_menu():
     print("10. Apply invert color filter")
     print("11. Apply edge detection filter")
     print("12. Add noise then sharpen")
+    print("13. Channel Manipulation & Swapping")
     print("0. Exit")
     return input("Choose an option: ").strip()
 
@@ -331,6 +364,8 @@ def main():
             apply_edge_detection_filter(current_image, output_dir)
         elif choice == "12":
             apply_noise_then_sharpen(current_image, output_dir)
+        elif choice == "13":
+            apply_channel_swap_filter(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
