@@ -6,7 +6,7 @@ from Quantitative_Proof import sobel_gradient_energy,variance_of_laplacian
 
 from filters import (
     apply_brightness, apply_all_brightness_levels, apply_grayscale,
-    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,unsharp_mask,,apply_channel_swap
+    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection, unsharp_mask, apply_channel_swap
 )
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
