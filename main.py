@@ -1,14 +1,12 @@
 import os
 import time
-from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection ,unsharp_mask
+from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,unsharp_mask,apply_channel_swap
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
 import utils
-from noise_filter_helper import smooth_image_with_gaussian_blur, smooth_image_with_gaussian_blur, \
-    remove_noise_with_median_filter
+from noise_filter_helper import smooth_image_with_gaussian_blur, remove_noise_with_median_filter
 from Quantitative_Proof import sobel_gradient_energy,variance_of_laplacian
-
 
 def load_image():
     """Prompt user for image path and load it"""
@@ -274,13 +272,47 @@ def apply_sharpen(current_image, output_dir):
     fm_sharp = variance_of_laplacian(sharpened)
     se_orig = sobel_gradient_energy(current_image)
     se_sharp = sobel_gradient_energy(sharpened)
-
     print(f" Variance of Laplacian • original: {fm_orig:.2f}, sharpened: {fm_sharp:.2f}")
     print(f" Sobel energy          • original: {se_orig:.0f}, sharpened: {se_sharp:.0f}")
 
     # 3) Display comparison
     utils.display_comparison(current_image, sharpened,
                              title="Sharpened")
+
+def apply_channel_swap_filter(current_image, output_dir):
+    """Apply channel swap/manipulation filter"""
+    print("\nAvailable channel modes:")
+    print("1. RGB (original)")
+    print("2. RBG (swap blue/green)")
+    print("3. GRB (swap green/red)")
+    print("4. GBR (green→blue, blue→red, red→green)")
+    print("5. BRG (blue→red, red→green, green→blue)")
+    print("6. BGR (reverse order)")
+    print("7. Red channel only")
+    print("8. Green channel only")
+    print("9. Blue channel only")
+
+    choice = input("Select mode (1-9): ").strip()
+
+    mode_map = {
+        '1': 'rgb', '2': 'rbg', '3': 'grb',
+        '4': 'gbr', '5': 'brg', '6': 'bgr',
+        '7': 'r', '8': 'g', '9': 'b'
+    }
+
+    if choice not in mode_map:
+        print("Invalid option.")
+        return
+
+    result = apply_channel_swap(current_image, mode_map[choice])
+
+    # Save and display
+    output_path = os.path.join(output_dir, f"channel_{mode_map[choice]}.jpg")
+    utils.save_image(result, output_path)
+    utils.display_comparison(current_image, result,
+                           f"Channel {mode_map[choice].upper()}")
+
+
 
 def show_main_menu():
     """Display the main menu"""
@@ -297,6 +329,8 @@ def show_main_menu():
     print("10. Apply invert color filter")
     print("11. Apply edge detection filter")
     print("12. Add noise then sharpen")
+    print("12. Add noise then sharpen")
+    print("13. Channel Manipulation & Swapping")
     print("0. Exit")
     return input("Choose an option: ").strip()
 
@@ -340,6 +374,8 @@ def main():
             apply_edge_detection_filter(current_image, output_dir)
         elif choice == "12":
             apply_sharpen(current_image, output_dir)
+        elif choice == "13":
+            apply_channel_swap_filter(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
