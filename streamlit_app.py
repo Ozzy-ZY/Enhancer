@@ -8,10 +8,10 @@ from filters import (
     apply_brightness, apply_all_brightness_levels, apply_grayscale,
     add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection, unsharp_mask, apply_channel_swap
 )
-from brightness_helpers import get_brightness_description
+from helpers.brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
-from noise_filter_helper import smooth_image_with_gaussian_blur, remove_noise_with_median_filter
+from helpers.noise_filter_helper import smooth_image_with_gaussian_blur, remove_noise_with_median_filter
 
 st.set_page_config(page_title="Image Enhancer", layout="wide")
 st.title("🖼️ Enhancer")
@@ -92,10 +92,9 @@ if uploaded_file:
         out_filename = "inverted.jpg"
 
     elif operation == "Edge Detection":
-        edge_dir = st.sidebar.selectbox("Direction", ["horizontal", "vertical", "both"])
         sensitivity = st.sidebar.slider("Sensitivity", 0.1, 2.0, 1.0)
-        result = apply_edge_detection(img, sensitivity, edge_dir)
-        out_filename = f"edges_{edge_dir}_{sensitivity:.1f}.jpg"
+        result = apply_edge_detection(img, sensitivity, 'both')
+        out_filename = f"edges_both_{sensitivity:.1f}.jpg"
 
 
     elif operation == "Image Sharpening":
