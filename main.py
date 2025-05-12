@@ -7,6 +7,7 @@ from InvertColorFilter import apply_invert
 import utils
 from noise_filter_helper import smooth_image_with_gaussian_blur, smooth_image_with_gaussian_blur, \
     remove_noise_with_median_filter
+from Quantitative_Proof import sobel_gradient_energy,variance_of_laplacian
 
 
 def load_image():
@@ -144,22 +145,6 @@ def denoise_gaussian_filter(current_image, output_dir):
     except ValueError:
         print("Please enter a valid number for sigma.")
 
-def apply_noise_then_sharpen(current_image, output_dir):
-    sharpened = unsharp_mask(
-        current_image,
-        ksize=(5, 5),
-        sigma=1.0,
-        amount=1.5,
-        threshold=10
-    )
-    sharp_filename = f"noise_sharpen.jpg"
-    sharp_path = os.path.join(output_dir, sharp_filename)
-    utils.save_image(sharpened, sharp_path)
-    print(f"✨ Sharpened image saved to {sharp_path}")
-
-    # 3) Display comparison
-    utils.display_comparison(current_image, sharpened,
-                             title=f"Noise  → Sharpen ")
 
 def denoise_median_filter(current_image, output_dir):
     """Apply Median filter for denoising"""
@@ -272,7 +257,30 @@ def apply_edge_detection_filter(current_image, output_dir):
     except ValueError:
         print("Please enter valid numbers for sensitivity.")
 
+def apply_sharpen(current_image, output_dir):
+    sharpened = unsharp_mask(
+        current_image,
+        ksize=(5, 5),
+        sigma=1.0,
+        amount=1.5,
+        threshold=10
+    )
+    # Save result
+    sharp_path = os.path.join(output_dir, "Sharpened.jpg")
+    utils.save_image(sharpened, sharp_path)
 
+    # Quantitative proof
+    fm_orig = variance_of_laplacian(current_image)
+    fm_sharp = variance_of_laplacian(sharpened)
+    se_orig = sobel_gradient_energy(current_image)
+    se_sharp = sobel_gradient_energy(sharpened)
+
+    print(f" Variance of Laplacian • original: {fm_orig:.2f}, sharpened: {fm_sharp:.2f}")
+    print(f" Sobel energy          • original: {se_orig:.0f}, sharpened: {se_sharp:.0f}")
+
+    # 3) Display comparison
+    utils.display_comparison(current_image, sharpened,
+                             title="Sharpened")
 
 def show_main_menu():
     """Display the main menu"""
@@ -331,7 +339,7 @@ def main():
         elif choice == "11":
             apply_edge_detection_filter(current_image, output_dir)
         elif choice == "12":
-            apply_noise_then_sharpen(current_image, output_dir)
+            apply_sharpen(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
