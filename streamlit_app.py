@@ -5,7 +5,7 @@ import io
 
 from filters import (
     apply_brightness, apply_all_brightness_levels, apply_grayscale,
-    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection
+    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,apply_channel_swap
 )
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
@@ -37,7 +37,7 @@ if uploaded_file:
         "Denoise (Median)",
         "Noise Removal Tool",
         "Invert Colors",
-        "Edge Detection"
+        "Edge Detection",
     ])
 
     result = img.copy()
