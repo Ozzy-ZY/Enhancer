@@ -38,7 +38,6 @@ if uploaded_file:
         "Noise Removal Tool",
         "Invert Colors",
         "Edge Detection",
-        "Manipulation & Swapping"
     ])
 
     result = img.copy()
@@ -95,11 +94,6 @@ if uploaded_file:
         sensitivity = st.sidebar.slider("Sensitivity", 0.1, 2.0, 1.0)
         result = apply_edge_detection(img, sensitivity, edge_dir)
         out_filename = f"edges_{edge_dir}_{sensitivity:.1f}.jpg"
-
-    elif operation == "Manipulation & Swapping":
-        mode_map = st.sidebar.selectbox("Available channel modes:", ["RGB (original)", "RBG (swap red/blue)", "GRB (swap green/red)", "GBR (green→blue, blue→red, red→green)", "BRG (blue→red, red→green, green→blue)", "BGR (reverse order)", "Red channel only", "Green channel only", "Blue channel only"])
-        result = apply_channel_swap(img, mode_map)
-        out_filename = "Swapping.jpg"
 
     else:
         st.info("Choose an operation from the sidebar to process your image!")
