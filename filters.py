@@ -1,5 +1,5 @@
 import numpy as np
-from brightness_helpers import get_brightness_factor, get_brightness_description
+from brightness_helpers import get_brightness_factor
 from edge_helpers import get_sobel_kernels, apply_convolution, normalize_edges
 
 def apply_brightness(image, level=0):
@@ -39,6 +39,84 @@ def add_gaussian_noise(image, intensity=0.1):
 
     return noisy_img
 
+def gaussian_kernel(ksize=5, sigma=1.0):
+    """
+    Create a 2D Gaussian kernel by outer-product of two 1D Gaussians.
+    ksize: odd integer > 1, kernel width & height
+    sigma: standard deviation of the Gaussian
+    """
+    # 1D coordinates centered at zero
+    ax = np.linspace(-(ksize // 2), ksize // 2, ksize)
+    gauss1d = np.exp(-0.5 * (ax / sigma)**2)
+    gauss1d /= gauss1d.sum()              # normalize
+    # Outer product to get 2D kernel
+    kernel = np.outer(gauss1d, gauss1d)
+    return kernel
+
+
+def convolve2d(image, kernel):
+    """
+    Convolve a 2D (H×W) or 3D (H×W×C) image with a 2D kernel.
+    Pads edges with reflect mode.
+    """
+    if image.ndim == 2:
+        image = image[:, :, None]   # make H×W×1 for uniformity
+
+    h, w, channels = image.shape
+    kh, kw = kernel.shape
+    pad_h, pad_w = kh // 2, kw // 2
+
+    # Pad each channel
+    padded = np.pad(image,
+                    ((pad_h, pad_h), (pad_w, pad_w), (0, 0)),
+                    mode='reflect')
+
+    # Prepare output
+    out = np.zeros_like(image, dtype=np.float32)
+
+    # Slide kernel
+    for y in range(h):
+        for x in range(w):
+            for c in range(channels):
+                region = padded[y:y+kh, x:x+kw, c]
+                out[y, x, c] = np.sum(region * kernel)
+
+    return out.squeeze()
+
+def unsharp_mask(image, ksize=(5,5), sigma=1.0, amount=1.0, threshold=0):
+    """
+    Manual unsharp masking (no OpenCV).
+
+    Parameters:
+        image (ndarray): Input H×W or H×W×C uint8 image.
+        ksize (tuple): (kernel_height, kernel_width), both odd.
+        sigma (float): Gaussian sigma.
+        amount (float): Strength of sharpening (>0).
+        threshold (int): Minimum difference to sharpen (optional).
+
+    Returns:
+        sharpened (ndarray): uint8 sharpened image.
+    """
+    # 1) Build kernel & blur
+    kh, kw = ksize
+    kernel = gaussian_kernel(kh, sigma)
+    img_float = image.astype(np.float32)
+    blurred = convolve2d(img_float, kernel)
+
+    # 2) Mask = original - blurred
+    mask = img_float - blurred
+
+    # 3) Optionally zero out small differences
+    if threshold > 0:
+        low_contrast = np.abs(mask) < threshold
+        mask[low_contrast] = 0
+
+    # 4) Add scaled mask back
+    sharpened = img_float + amount * mask
+
+    # 5) Clip and convert back
+    sharpened = np.clip(sharpened, 0, 255).astype(np.uint8)
+    return sharpened
 
 def add_salt_pepper_noise(image, intensity=0.1):
     # Create a copy of the image

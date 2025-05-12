@@ -1,12 +1,11 @@
 import os
 import time
-from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection
+from filters import apply_brightness, apply_all_brightness_levels, apply_grayscale, add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,unsharp_mask
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
 import utils
-from noise_filter_helper import smooth_image_with_gaussian_blur, smooth_image_with_gaussian_blur, \
-    remove_noise_with_median_filter
+from noise_filter_helper import smooth_image_with_gaussian_blur, remove_noise_with_median_filter
 
 
 def load_image():
@@ -96,6 +95,22 @@ def apply_gaussian_noise_filter(current_image, output_dir):
     except ValueError:
         print("Please enter a value between 0.0 and 1.0.")
 
+def apply_noise_then_sharpen(current_image, output_dir):
+    sharpened = unsharp_mask(
+        current_image,
+        ksize=(5, 5),
+        sigma=1.0,
+        amount=1.5,
+        threshold=10
+    )
+    sharp_filename = f"noise_sharpen.jpg"
+    sharp_path = os.path.join(output_dir, sharp_filename)
+    utils.save_image(sharpened, sharp_path)
+    print(f"✨ Sharpened image saved to {sharp_path}")
+
+    # 3) Display comparison
+    utils.display_comparison(current_image, sharpened,
+                             title=f"Noise  → Sharpen ")
 
 def apply_salt_pepper_noise_filter(current_image, output_dir):
     """Apply Salt and Pepper noise with user-specified intensity"""
@@ -272,6 +287,7 @@ def show_main_menu():
     print("9. Noise Removal Tool")
     print("10. Apply invert color filter")
     print("11. Apply edge detection filter")
+    print("12. Add noise then sharpen")
     print("0. Exit")
     return input("Choose an option: ").strip()
 
@@ -313,6 +329,8 @@ def main():
             apply_invert_filter(current_image, output_dir)
         elif choice == "11":
             apply_edge_detection_filter(current_image, output_dir)
+        elif choice == "12":
+            apply_noise_then_sharpen(current_image, output_dir)
         elif choice == "0":
             print("Exiting...")
             time.sleep(1)
