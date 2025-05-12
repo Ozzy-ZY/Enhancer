@@ -2,10 +2,11 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 import io
+from Quantitative_Proof import sobel_gradient_energy,variance_of_laplacian
 
 from filters import (
     apply_brightness, apply_all_brightness_levels, apply_grayscale,
-    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection,apply_channel_swap
+    add_gaussian_noise, add_salt_pepper_noise, apply_edge_detection, unsharp_mask, apply_channel_swap
 )
 from brightness_helpers import get_brightness_description
 from noiseRemovalFilter import remove_noise
@@ -38,6 +39,7 @@ if uploaded_file:
         "Noise Removal Tool",
         "Invert Colors",
         "Edge Detection",
+        "Image Sharpening"
     ])
 
     result = img.copy()
@@ -94,6 +96,35 @@ if uploaded_file:
         sensitivity = st.sidebar.slider("Sensitivity", 0.1, 2.0, 1.0)
         result = apply_edge_detection(img, sensitivity, edge_dir)
         out_filename = f"edges_{edge_dir}_{sensitivity:.1f}.jpg"
+
+
+    elif operation == "Image Sharpening":
+
+        ksize = st.sidebar.slider("Kernel Size (odd)", 3, 15, 5, step=2)
+
+        sigma = st.sidebar.slider("Gaussian Sigma", 0.1, 5.0, 1.0)
+
+        amount = st.sidebar.slider("Sharpen Amount", 0.1, 3.0, 1.5)
+
+        threshold = st.sidebar.slider("Threshold", 0, 50, 10)
+
+        result = unsharp_mask( img,ksize=(ksize, ksize), sigma=sigma,amount=amount,threshold=threshold )
+
+        out_filename = f"sharpen_k{ksize}_σ{sigma:.1f}_a{amount:.1f}_t{threshold}.jpg"
+        # Compute verification metrics
+        fm_orig = variance_of_laplacian(img)
+        fm_sharp = variance_of_laplacian(result)
+        se_orig = sobel_gradient_energy(img)
+        se_sharp = sobel_gradient_energy(result)
+
+        # Show result
+        st.image(result, caption="Result: Sharpen", width=PREVIEW_WIDTH)
+        st.markdown("**🔍 Focus Metrics**")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric("Variance of Laplacian", f"{fm_sharp:.2f}", delta=f"{fm_sharp - fm_orig:.2f}")
+        with c2:
+            st.metric("Sobel Energy", f"{se_sharp:.0f}", delta=f"{se_sharp - se_orig:.0f}")
 
     else:
         st.info("Choose an operation from the sidebar to process your image!")

@@ -6,7 +6,7 @@ from noiseRemovalFilter import remove_noise
 from InvertColorFilter import apply_invert
 import utils
 from noise_filter_helper import smooth_image_with_gaussian_blur, remove_noise_with_median_filter
-
+from Quantitative_Proof import sobel_gradient_energy,variance_of_laplacian
 
 def load_image():
     """Prompt user for image path and load it"""
@@ -95,22 +95,6 @@ def apply_gaussian_noise_filter(current_image, output_dir):
     except ValueError:
         print("Please enter a value between 0.0 and 1.0.")
 
-def apply_noise_then_sharpen(current_image, output_dir):
-    sharpened = unsharp_mask(
-        current_image,
-        ksize=(5, 5),
-        sigma=1.0,
-        amount=1.5,
-        threshold=10
-    )
-    sharp_filename = f"noise_sharpen.jpg"
-    sharp_path = os.path.join(output_dir, sharp_filename)
-    utils.save_image(sharpened, sharp_path)
-    print(f"✨ Sharpened image saved to {sharp_path}")
-
-    # 3) Display comparison
-    utils.display_comparison(current_image, sharpened,
-                             title=f"Noise  → Sharpen ")
 
 def apply_salt_pepper_noise_filter(current_image, output_dir):
     """Apply Salt and Pepper noise with user-specified intensity"""
@@ -159,22 +143,6 @@ def denoise_gaussian_filter(current_image, output_dir):
     except ValueError:
         print("Please enter a valid number for sigma.")
 
-def apply_noise_then_sharpen(current_image, output_dir):
-    sharpened = unsharp_mask(
-        current_image,
-        ksize=(5, 5),
-        sigma=1.0,
-        amount=1.5,
-        threshold=10
-    )
-    sharp_filename = f"noise_sharpen.jpg"
-    sharp_path = os.path.join(output_dir, sharp_filename)
-    utils.save_image(sharpened, sharp_path)
-    print(f"✨ Sharpened image saved to {sharp_path}")
-
-    # 3) Display comparison
-    utils.display_comparison(current_image, sharpened,
-                             title=f"Noise  → Sharpen ")
 
 def denoise_median_filter(current_image, output_dir):
     """Apply Median filter for denoising"""
@@ -287,6 +255,30 @@ def apply_edge_detection_filter(current_image, output_dir):
     except ValueError:
         print("Please enter valid numbers for sensitivity.")
 
+def apply_sharpen(current_image, output_dir):
+    sharpened = unsharp_mask(
+        current_image,
+        ksize=(5, 5),
+        sigma=1.0,
+        amount=1.5,
+        threshold=10
+    )
+    # Save result
+    sharp_path = os.path.join(output_dir, "Sharpened.jpg")
+    utils.save_image(sharpened, sharp_path)
+
+    # Quantitative proof
+    fm_orig = variance_of_laplacian(current_image)
+    fm_sharp = variance_of_laplacian(sharpened)
+    se_orig = sobel_gradient_energy(current_image)
+    se_sharp = sobel_gradient_energy(sharpened)
+    print(f" Variance of Laplacian • original: {fm_orig:.2f}, sharpened: {fm_sharp:.2f}")
+    print(f" Sobel energy          • original: {se_orig:.0f}, sharpened: {se_sharp:.0f}")
+
+    # 3) Display comparison
+    utils.display_comparison(current_image, sharpened,
+                             title="Sharpened")
+
 def apply_channel_swap_filter(current_image, output_dir):
     """Apply channel swap/manipulation filter"""
     print("\nAvailable channel modes:")
@@ -299,26 +291,27 @@ def apply_channel_swap_filter(current_image, output_dir):
     print("7. Red channel only")
     print("8. Green channel only")
     print("9. Blue channel only")
-    
+
     choice = input("Select mode (1-9): ").strip()
-    
+
     mode_map = {
         '1': 'rgb', '2': 'rbg', '3': 'grb',
         '4': 'gbr', '5': 'brg', '6': 'bgr',
         '7': 'r', '8': 'g', '9': 'b'
     }
-    
+
     if choice not in mode_map:
         print("Invalid option.")
         return
-        
+
     result = apply_channel_swap(current_image, mode_map[choice])
-    
+
     # Save and display
     output_path = os.path.join(output_dir, f"channel_{mode_map[choice]}.jpg")
     utils.save_image(result, output_path)
-    utils.display_comparison(current_image, result, 
+    utils.display_comparison(current_image, result,
                            f"Channel {mode_map[choice].upper()}")
+
 
 
 def show_main_menu():
@@ -379,7 +372,7 @@ def main():
         elif choice == "11":
             apply_edge_detection_filter(current_image, output_dir)
         elif choice == "12":
-            apply_noise_then_sharpen(current_image, output_dir)
+            apply_sharpen(current_image, output_dir)
         elif choice == "13":
             apply_channel_swap_filter(current_image, output_dir)
         elif choice == "0":
